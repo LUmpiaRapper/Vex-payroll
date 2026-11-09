@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f3ee">
+<title>Payday Control</title>
+<style>
+:root{
+  --bg:#f5f3ee;--card:#ffffff;--text:#18202b;--muted:#6b7280;--line:#e3ded4;
+  --accent:#0f766e;--accent-soft:rgba(15,118,110,.1);--accent-ink:#0b5f59;
+  --blue:var(--accent);--blue2:var(--accent);--green:#15803d;--red:#c24141;--amber:#b7791f;--teal:#0f766e;
+  --surface:#f9f7f2;--danger-soft:rgba(194,65,65,.1);--warn-soft:rgba(183,121,31,.12);--ok-soft:rgba(21,128,61,.1);
+  --shadow:0 1px 2px rgba(24,32,43,.04);
+  --shadow-hover:0 4px 12px rgba(24,32,43,.08);
+  --shadow-active:0 2px 6px rgba(24,32,43,.06);
+  --r:14px;--r-lg:18px;--focus:0 0 0 3px rgba(15,118,110,.22);
+  --ease:200ms cubic-bezier(.25,.46,.45,.94);
+  --ease-spring:300ms cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100dvh;background:var(--bg);color:var(--text);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+  padding-bottom:calc(104px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+.app{max-width:760px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px 0}
+h1{font-size:28px;font-weight:800;letter-spacing:-.03em;margin:0}
+h2{font-size:20px;font-weight:750;letter-spacing:-.02em;margin:0}
+h3{font-size:16px;font-weight:700;margin:0}
+p{margin:0}
+.muted{color:var(--muted)}
+.note{font-size:12px;color:var(--muted);line-height:1.45}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.amt,.kv b,.mini strong,.tile strong,.hero-amt,.hero-break strong,.vexScore,.payBar strong,.receipt .t,.pay-total strong{font-variant-numeric:tabular-nums}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.topmeta{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.badge{font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);padding:6px 10px;border-radius:99px;white-space:nowrap;border:1px solid rgba(15,118,110,.12);transition:all var(--ease)}
+.badge:hover{background:rgba(15,118,110,.16);border-color:rgba(15,118,110,.18)}
+.badge.subtle{color:var(--muted);background:var(--card);border-color:var(--line)}
+.badge.subtle:hover{background:var(--surface);color:var(--text)}
+:focus-visible{outline:none;box-shadow:var(--focus);transition:box-shadow var(--ease)}
+
+/* Pages */
+.page{display:none}.page.active{display:block}
+.pageHead{margin:6px 0 14px}.pageHead p{color:var(--muted);margin-top:2px}
+.subpanel{display:none}.subpanel.active{display:block}
+
+/* Cards */
+.card{background:var(--card);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow);margin-bottom:14px;border:1px solid var(--line);min-width:0;transition:box-shadow var(--ease),border-color var(--ease)}
+.card:hover{box-shadow:var(--shadow-hover);border-color:rgba(24,32,43,.12)}
+.card h3{margin-bottom:0}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.split>.card{margin-bottom:0}
+
+/* Hero */
+.hero{background:#18202b;color:#fff;border-radius:var(--r-lg);padding:18px;border:1px solid #18202b;margin-bottom:14px;transition:box-shadow var(--ease)}
+.hero:hover{box-shadow:0 6px 20px rgba(24,32,43,.16)}
+.hero .lbl{font-size:12px;font-weight:650;color:rgba(255,255,255,.72);letter-spacing:.01em}
+.hero-amt{display:block;font-size:clamp(32px,8.5vw,42px);font-weight:800;letter-spacing:-.035em;margin:6px 0 4px;overflow-wrap:anywhere;color:#fff;transition:color var(--ease)}
+.hero-amt.positive{color:#86efac}.hero-amt.negative{color:#fca5a5}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.78);margin-bottom:12px}
+.hero-break{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.hero-break button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 8px;color:#fff;text-align:left;font:inherit;cursor:pointer;min-height:44px;transition:all var(--ease);transform:translateY(0)}
+.hero-break button:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
+.hero-break button:active{transform:translateY(0) scale(.98)}
+.hero-break span{display:block;font-size:11px;color:rgba(255,255,255,.68);font-weight:650}
+.hero-break strong{display:block;font-size:14px;margin-top:2px}
+.heroMsg{padding:10px 12px;border-radius:12px;background:rgba(134,239,172,.14);color:#dcfce7;font-weight:650;font-size:13px;border:1px solid rgba(134,239,172,.18);transition:all var(--ease)}
+.heroMsg.dangerMsg{background:rgba(252,165,165,.14);color:#fee2e2;border-color:rgba(252,165,165,.18)}
+.hero.est strong{color:#fcd34d}
+
+/* Date strip */
+.datestrip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}
+.ds{background:#fff;border-radius:14px;text-align:center;padding:8px 0;border:1px solid var(--line);min-width:0}
+.ds small{display:block;color:var(--muted);font-size:11px;font-weight:700}
+.ds b{font-size:16px}
+.ds.today{background:var(--text);color:#fff;border-color:var(--text)}
+.ds.today small{color:rgba(255,255,255,.72)}
+.ds i{display:block;width:6px;height:6px;border-radius:50%;background:transparent;margin:3px auto 0}
+.ds i.soon{background:var(--amber)}.ds i.over{background:var(--red)}
+.ds.today i.soon,.ds.today i.over{box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+
+/* Mini metrics */
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.mini>div{background:#fff;border-radius:16px;padding:14px;border:1px solid var(--line);min-width:0}
+.mini small{color:var(--muted);font-size:12px;font-weight:650;display:block}
+.mini strong{font-size:18px;font-weight:750;letter-spacing:-.02em;overflow-wrap:anywhere}
+
+/* Plan tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.tile{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;color:var(--text);text-align:left;min-height:112px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;cursor:pointer;font:inherit;min-width:0;box-shadow:var(--shadow);transition:all var(--ease);transform:translateY(0)}
+.tile:hover{box-shadow:var(--shadow-hover);border-color:rgba(24,32,43,.16);transform:translateY(-2px)}
+.tile:active{transform:translateY(0) scale(.98);box-shadow:var(--shadow-active)}
+.tile b{font-size:12px;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.tile strong{display:block;font-size:18px;font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
+.tile small{font-size:12px;color:var(--muted)}
+.tile .bar{height:6px;background:#ebe7df;border-radius:9px;overflow:hidden}
+.tile .bar i{display:block;height:100%;background:var(--accent);border-radius:9px;transition:width var(--ease)}
+.tile.warn{border-color:rgba(194,65,65,.25);background:linear-gradient(180deg,#fff,#fff8f8)}
+.tile.warn .bar i{background:var(--red)}
+.tile.t1,.tile.t2,.tile.t3,.tile.t4{background:#fff;color:var(--text)}
+
+/* Segmented control and chips */
+.seg{display:flex;background:#ebe7df;border-radius:13px;padding:3px;gap:3px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;border:1px solid var(--line)}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:1 0 auto;border:0;background:transparent;padding:9px 12px;border-radius:10px;font:inherit;font-weight:700;color:var(--muted);cursor:pointer;min-height:40px;white-space:nowrap;transition:all var(--ease)}
+.seg button:hover:not(.active){background:rgba(255,255,255,.5);color:var(--text)}
+.seg button:active:not(.active){transform:scale(.98)}
+.seg button.active{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(24,32,43,.06)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0 4px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:99px;padding:8px 14px;font:inherit;font-weight:650;color:var(--text);cursor:pointer;min-height:40px;transition:all var(--ease);transform:translateY(0)}
+.chip:hover:not(.active){background:var(--surface);border-color:rgba(24,32,43,.16);transform:translateY(-1px)}
+.chip:active:not(.active){transform:translateY(0) scale(.98)}
+.chip.active{background:var(--text);color:#fff;border-color:var(--text);box-shadow:0 2px 6px rgba(24,32,43,.12)}
+.groupLabel{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:10px 2px 6px}
+.groupLabel:first-child{margin-top:0}
+.alertRow{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;border:1px solid var(--line);margin-bottom:8px;background:#fff;cursor:pointer;font:inherit;text-align:left;width:100%}
+.alertRow b{display:block;font-size:14px}.alertRow small{display:block;color:var(--muted);font-size:12px}
+.alertRow .dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+.alertRow.over{background:#fff8f8;border-color:rgba(194,65,65,.2)}.alertRow.over .dot{background:var(--red)}
+.alertRow.soon{background:#fffbf2;border-color:rgba(183,121,31,.22)}.alertRow.soon .dot{background:var(--amber)}
+.alertRow.warn{background:#fffbf2;border-color:rgba(183,121,31,.22)}.alertRow.warn .dot{background:var(--amber)}
+
+/* Lists */
+.list{display:grid;gap:8px}
+.item{display:flex;align-items:center;gap:12px;background:#fff;border-radius:var(--r);padding:12px;border:1px solid var(--line);border-left:4px solid var(--c,var(--accent));min-width:0;transition:all var(--ease);transform:translateX(0)}
+.item:hover{box-shadow:var(--shadow-hover);border-color:rgba(24,32,43,.14);transform:translateX(2px)}
+.item .main{flex:1;min-width:0}
+.item .main b{display:block;overflow-wrap:anywhere}
+.item .main small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.item .amt{font-weight:750;white-space:nowrap;text-align:right;font-size:14px}
+.item .stack{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.item details{margin-top:6px}
+.item summary{cursor:pointer;color:var(--accent-ink);font-weight:700;font-size:12px;min-height:28px;display:flex;align-items:center;transition:color var(--ease)}
+.item summary:hover{color:var(--accent)}
+.vexWhy{font-size:13px;color:var(--muted);margin:4px 0 0;line-height:1.45}
+.tag{display:inline-block;font-size:11px;font-weight:750;padding:3px 8px;border-radius:99px;background:#eef1f7;color:var(--muted);transition:all var(--ease)}
+.tag.paid{background:var(--ok-soft);color:var(--green)}
+.tag.over{background:var(--danger-soft);color:var(--red)}
+.tag.soon{background:var(--warn-soft);color:#92600f}
+.tag.up{background:var(--accent-soft);color:var(--accent-ink)}
+.pill{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 10px;font:inherit;font-size:12px;font-weight:700;color:var(--accent-ink);min-height:32px;cursor:pointer;white-space:nowrap;transition:all var(--ease);transform:translateY(0)}
+.pill:hover:not(.on){background:var(--surface);border-color:rgba(15,118,110,.24);transform:translateY(-1px)}
+.pill:active:not(.on){transform:translateY(0) scale(.98)}
+.pill.on{background:var(--ok-soft);color:var(--green);border-color:transparent}
+.iconBtn{border:1px solid var(--line);background:var(--surface);width:36px;height:36px;min-height:36px;border-radius:10px;color:var(--red);font-size:18px;cursor:pointer;flex:0 0 36px;font-weight:700;transition:all var(--ease);transform:scale(1)}
+.iconBtn:hover{background:#fff0f0;border-color:rgba(194,65,65,.32);color:#991b1b;transform:scale(1.05)}
+.iconBtn:active{transform:scale(.95)}
+.empty{text-align:center;color:var(--muted);padding:20px;border:1.5px dashed var(--line);border-radius:var(--r);background:rgba(255,255,255,.5);transition:all var(--ease)}
+.empty:hover{border-color:rgba(107,114,128,.4);background:rgba(255,255,255,.7)}
+.progress{height:8px;background:#ebe7df;border-radius:99px;overflow:hidden}
+.progress div{height:100%;background:var(--accent);border-radius:99px;transition:width var(--ease),background var(--ease)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv:last-child{border-bottom:0}
+.kv span{color:var(--muted)}
+.kv b{font-weight:700;text-align:right}
+
+/* Forms */
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:0 0 5px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+input,select,textarea{width:100%;min-height:46px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;color:var(--text);-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:var(--focus);background:#fff}
+.field{margin-bottom:12px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.fgrid .full{grid-column:1/-1}
+.stepper{display:grid;grid-template-columns:44px 1fr 44px;gap:6px}
+.stepper button{border:1px solid var(--line);background:#fff;border-radius:12px;font-size:20px;font-weight:700;color:var(--accent-ink);cursor:pointer;min-height:46px}
+.stepper input{text-align:center}
+.fold{margin-top:12px}
+.fold summary{cursor:pointer;color:var(--accent-ink);font-weight:750;min-height:40px;display:flex;align-items:center;list-style:none}
+.fold summary::-webkit-details-marker{display:none}
+.fold[open] summary{margin-bottom:10px}
+
+/* Buttons */
+.btn{border:1px solid var(--accent);border-radius:12px;min-height:46px;padding:10px 16px;background:var(--accent);color:#fff;font:inherit;font-weight:750;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center;transition:all var(--ease);transform:translateY(0);box-shadow:0 1px 2px rgba(15,118,110,.12)}
+.btn:hover{background:var(--accent-ink);border-color:var(--accent-ink);box-shadow:0 4px 12px rgba(15,118,110,.18);transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.98);box-shadow:0 2px 6px rgba(15,118,110,.14)}
+.btn.sm{min-height:38px;padding:8px 14px;font-size:13px;border-radius:10px}
+.btn.alt{background:#fff;color:var(--accent-ink);border-color:var(--line);box-shadow:var(--shadow)}
+.btn.alt:hover{background:var(--surface);border-color:rgba(15,118,110,.32);color:var(--accent);box-shadow:var(--shadow-hover)}
+.btn.red{background:#fff;color:var(--red);border-color:rgba(194,65,65,.35);box-shadow:var(--shadow)}
+.btn.red:hover{background:#fff0f0;border-color:rgba(194,65,65,.5);color:#991b1b;box-shadow:var(--shadow-hover)}
+.btn.block{width:100%}
+.link{background:none;border:0;color:var(--accent-ink);font:inherit;font-weight:750;cursor:pointer;padding:6px 0;min-height:36px;border-radius:8px;transition:all var(--ease);position:relative}
+.link:hover{color:var(--accent)}
+.link::after{content:'';position:absolute;bottom:4px;left:0;width:100%;height:1.5px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform var(--ease)}
+.link:hover::after{transform:scaleX(1);transform-origin:left}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions>*{flex:1 1 150px}
+
+/* Auditor Vex */
+.vex{background:#fff;border:1px solid var(--line);transition:all var(--ease)}
+.vex[open]{border-color:rgba(194,65,65,.22);box-shadow:0 4px 16px rgba(194,65,65,.08)}
+.vex>summary{list-style:none;cursor:pointer}
+.vex>summary::-webkit-details-marker{display:none}
+.vexHead{display:flex;gap:12px;align-items:center}
+.vexAvatar{width:42px;height:42px;flex:0 0 42px;border-radius:12px;overflow:hidden;background:#18202b;border:1px solid #18202b;transition:transform var(--ease-spring)}
+.vex[open] .vexAvatar{transform:scale(1.05)}
+.vexAvatar img{width:100%;height:100%;object-fit:cover;display:block}
+.vexRank{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
+.vexTitle{font-size:16px;font-weight:750;margin:1px 0 0}
+.vexMeta{color:var(--muted);font-size:12px}
+.vexVerdict{margin-top:10px;font-size:14px;line-height:1.45;color:var(--text)}
+.vexBody{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.vexSpeech{padding:12px;border-left:3px solid var(--red);border-radius:4px 10px 10px 4px;background:var(--danger-soft);font-weight:600;line-height:1.5;font-size:14px;transition:all var(--ease)}
+.vexLatest{margin-top:10px;font-size:13px;color:var(--muted)}
+.vexLatest b{color:var(--text)}
+.vexScore{font-size:22px;font-weight:850}
+.vexPulse{animation:vexPulse .3s ease}
+@keyframes vexPulse{50%{background:#fff8f8}}
+
+/* Vex chat bubble */
+.vexBubble{position:fixed;right:12px;bottom:calc(90px + env(safe-area-inset-bottom));z-index:90;display:none;flex-direction:column;align-items:flex-end;gap:8px;max-width:calc(100% - 24px)}
+.vexBubble.show{display:flex;animation:vexBubbleIn var(--ease-spring)}
+@keyframes vexBubbleIn{from{opacity:0;transform:translateY(10px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.vexBubbleMsg{max-width:280px;background:#18202b;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 12px;border:1px solid #18202b;box-shadow:0 8px 24px rgba(24,32,43,.16);font-size:13px;line-height:1.4;white-space:pre-wrap;word-break:break-word;animation:vexPop .25s ease}
+.vexBubbleBtn{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:#fff;overflow:hidden;padding:0;box-shadow:0 8px 24px rgba(24,32,43,.16);cursor:pointer;transition:all var(--ease-spring);transform:scale(1)}
+.vexBubbleBtn:hover{box-shadow:0 12px 32px rgba(24,32,43,.22);transform:scale(1.08)}
+.vexBubbleBtn:active{transform:scale(.95)}
+.vexBubbleBtn img{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes vexPop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Payroll */
+.receipt{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.receipt .kv{padding:10px 12px;border-bottom-color:#e8e3da}
+.receipt .t{font-weight:800;background:#fff}
+.receipt .t.ded b{color:var(--red)}
+.receipt .t.net{background:#18202b;color:#fff;border-bottom:0}
+.receipt .t.net span,.receipt .t.net b{color:#fff}
+.pay-total{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;transition:box-shadow var(--ease)}
+.pay-total:hover{box-shadow:var(--shadow-hover)}
+.pay-total span{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.pay-total strong{display:block;font-size:28px;letter-spacing:-.03em}
+.pay-total small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.payBar{position:sticky;bottom:calc(96px + env(safe-area-inset-bottom));z-index:5;background:#18202b;color:#fff;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #18202b;margin-top:4px;transition:box-shadow var(--ease)}
+.payBar:hover{box-shadow:0 8px 24px rgba(24,32,43,.24)}
+.payBar small{color:rgba(255,255,255,.72);font-weight:650;display:block}
+.payBar strong{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.payBar .btn{background:#fff;color:#18202b;border-color:#fff;box-shadow:0 2px 8px rgba(255,255,255,.12)}
+.payBar .btn:hover{background:#f5f3ee;border-color:#f5f3ee;color:#0f172a;box-shadow:0 4px 16px rgba(255,255,255,.2)}
+
+/* Charts */
+.chart svg{width:100%;height:auto;display:block}
+.chart-sum{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* Bottom tab bar */
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(calc(100% - 24px),520px);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;gap:2px;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:22px;padding:6px;z-index:50;border:1px solid var(--line);box-shadow:0 8px 24px rgba(24,32,43,.12);transition:box-shadow var(--ease)}
+.tabbar:hover{box-shadow:0 12px 32px rgba(24,32,43,.16)}
+.tab{border:0;background:transparent;min-height:54px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:inherit;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;padding:0;transition:all var(--ease);transform:translateY(0)}
+.tab:hover:not(.active){color:var(--text);background:rgba(24,32,43,.04);transform:translateY(-1px)}
+.tab:active:not(.active){transform:translateY(0) scale(.95)}
+.tab i{font-style:normal;font-size:19px;line-height:1;transition:transform var(--ease)}
+.tab:hover:not(.active) i{transform:scale(1.1)}
+.tab.active{color:var(--accent-ink);background:var(--accent-soft)}
+.fab{width:54px;height:54px;margin:0 auto;border-radius:16px;background:var(--accent);color:#fff;border:1px solid var(--accent);font-size:30px;font-weight:500;line-height:1;cursor:pointer;display:grid;place-items:center;transform:translateY(-10px);box-shadow:0 6px 16px rgba(15,118,110,.22);transition:all var(--ease-spring)}
+.fab:hover{background:var(--accent-ink);border-color:var(--accent-ink);box-shadow:0 10px 28px rgba(15,118,110,.32);transform:translateY(-12px) scale(1.05)}
+.fab:active{transform:translateY(-10px) scale(.95);box-shadow:0 4px 12px rgba(15,118,110,.24)}
+
+/* Quick add sheet */
+.sheetWrap{position:fixed;inset:0;background:rgba(24,32,43,.32);display:none;align-items:flex-end;justify-content:center;z-index:100;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);animation:fadeIn var(--ease)}
+.sheetWrap.open{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--bg);width:min(100%,560px);border-radius:22px 22px 0 0;padding:12px 16px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow:auto;border:1px solid var(--line);border-bottom:0;animation:slideUp var(--ease-spring)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.grab{width:40px;height:5px;background:#d1ccc3;border-radius:9px;margin:0 auto 10px}
+.amountBox{background:#fff;border-radius:16px;padding:12px 16px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:6px;margin:12px 0;transition:all var(--ease)}
+.amountBox:focus-within{border-color:var(--accent);box-shadow:var(--focus);background:#fff}
+.amountBox span{font-size:30px;font-weight:700;color:var(--muted)}
+.amountBox input{font-size:40px;font-weight:800;text-align:center;border:0;background:transparent;box-shadow:none;min-height:60px;padding:0;max-width:260px;letter-spacing:-.03em}
+.amountBox input:focus,.amountBox input:focus-visible{box-shadow:none;background:transparent}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,16px);opacity:0;background:#18202b;color:#fff;padding:10px 12px 10px 16px;border-radius:14px;display:flex;gap:14px;align-items:center;transition:opacity var(--ease),transform var(--ease);z-index:120;pointer-events:none;border:1px solid #18202b;max-width:calc(100% - 32px);font-size:14px;box-shadow:0 8px 24px rgba(24,32,43,.24)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{background:none;border:0;color:#99f6e4;font:inherit;font-weight:800;cursor:pointer;min-height:36px;padding:0 6px;border-radius:8px;transition:all var(--ease)}
+.toast button:hover{background:rgba(153,246,228,.14);color:#5eead4}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media (max-width:420px){
+  .tiles{gap:8px}.tile{min-height:116px;padding:12px}.tile strong{font-size:18px}
+  .mini strong{font-size:16px}
+  .tab{font-size:10px}.tab i{font-size:17px}
+  .card{padding:14px}
+  .app{padding:calc(12px + env(safe-area-inset-top)) 12px 0}
+  .hero-break{grid-template-columns:1fr}
+  .hero-break button{min-height:48px;padding:12px 10px}
+  .datestrip{margin-bottom:10px}
+  .ds{padding:6px 0}
+  .ds b{font-size:14px}
+  .ds small{font-size:10px}
+  .hero{padding:14px}
+  .hero-amt{font-size:clamp(28px,10vw,36px)}
+  .hero-sub{font-size:12.5px}
+  .vexAvatar{width:40px;height:40px;flex:0 0 40px}
+  .vexTitle{font-size:15px}
+  .vexRank{font-size:10px}
+  .vexSpeech{font-size:13px;padding:10px}
+  .vexScore{font-size:20px}
+  .vexBubble{right:10px;bottom:calc(84px + env(safe-area-inset-bottom))}
+  .vexBubbleBtn{width:48px;height:48px}
+  .vexBubbleMsg{max-width:240px}
+  .fab{width:50px;height:50px;font-size:28px;transform:translateY(-8px)}
+  .fab:hover{transform:translateY(-10px) scale(1.05)}
+  .fab:active{transform:translateY(-8px) scale(.95)}
+  .tabbar{gap:2px;padding:4px;border-radius:20px}
+  .tab{min-height:50px;border-radius:14px}
+  .tab i{font-size:18px}
+  .sheet{border-radius:20px 20px 0 0;padding:12px 14px calc(16px + env(safe-area-inset-bottom))}
+  .amountBox{margin:10px 0}
+  .amountBox input{font-size:36px;min-height:56px}
+  .amountBox span{font-size:26px}
+  .btn{min-height:44px;padding:10px 14px}
+  .btn.sm{min-height:40px}
+  .item{padding:10px}
+  .item .amt{font-size:13px}
+  .alertRow{padding:10px}
+  .alertRow b{font-size:13px}
+  .alertRow small{font-size:11px}
+  .receipt .kv{padding:8px 10px}
+  .kv{font-size:13px;padding:8px 0}
+  .pill{padding:5px 9px;font-size:11px}
+  .tag{font-size:10px;padding:2px 7px}
+  .fgrid{gap:8px}
+  .field{margin-bottom:10px}
+  label{font-size:11px;margin:0 0 4px}
+  input,select,textarea{min-height:44px;font-size:16px;padding:10px 12px}
+  .payBar{padding:12px 14px}
+  .payBar strong{font-size:20px}
+  .payBar .btn{min-height:44px;padding:10px 14px}
+  .pay-total{padding:12px}
+  .pay-total strong{font-size:24px}
+  .mini{margin-bottom:10px}
+  .mini>div{padding:12px}
+  .pageHead{margin:4px 0 10px}
+  .pageHead h1{font-size:24px}
+  .pageHead p{font-size:12px}
+  .topbar{margin-bottom:10px}
+  .badge{font-size:11px;padding:5px 9px}
+  .groupLabel{font-size:10px;margin:8px 2px 5px}
+  .actions>*{flex:1 1 140px}
+  .link{min-height:36px;padding:5px 0}
+  .chat-entered,.vexBody{animation:none}
+}
+@media (max-width:640px){
+  .hero-break{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<header class="topbar">
+  <div class="brand">Payday Control</div>
+  <div class="topmeta">
+    <span class="badge" id="cutoffBadge">Semi-monthly</span>
+    <span class="badge subtle">PHP</span>
+  </div>
+</header>
+
+<!-- HOME -->
+<section class="page active" id="overview" aria-label="Home">
+  <div class="pageHead">
+    <p id="greetSub" class="muted"></p>
+    <h1 id="greetTitle">Hello</h1>
+  </div>
+
+  <div class="datestrip" id="dateStrip" aria-label="This week and bill due dots"></div>
+
+  <div class="hero" id="heroCard">
+    <div class="row"><span class="lbl">Safe to spend</span><span class="lbl" id="heroUntil">until next payday</span></div>
+    <strong id="safeSpend" class="hero-amt">₱0.00</strong>
+    <p id="heroSub" class="hero-sub">Actual balances minus commitments due before next payday.</p>
+    <div class="hero-break" aria-label="Safe spend breakdown">
+      <button type="button" data-page="money"><span>Available</span><strong id="accountTotal">₱0.00</strong></button>
+      <button type="button" data-goto="plan:bills"><span>Bills &amp; debt due</span><strong id="committed">₱0.00</strong></button>
+      <button type="button" data-goto="plan:goals"><span>Goal set-asides</span><strong id="goalCommit">₱0.00</strong></button>
+    </div>
+    <div id="paydayMessage" class="heroMsg"></div>
+  </div>
+
+  <div id="attention"></div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <div class="row">
+      <h3>Next payday</h3>
+      <input id="nextPayday" type="date" style="width:auto;min-height:40px;font-size:14px;padding:6px 10px">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <h3>Upcoming bills</h3>
+      <button class="link" data-goto="plan:bills">See all</button>
+    </div>
+    <div class="chips" style="margin:10px 0 12px">
+      <button class="chip active" data-home="unpaid">Unpaid</button>
+      <button class="chip" data-home="due">Due before payday</button>
+      <button class="chip" data-home="paid">Paid</button>
+      <button class="chip" data-home="all">All</button>
+    </div>
+    <div id="upcomingMini"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <h3>Recent transactions</h3>
+      <button class="link" data-page="money">All</button>
+    </div>
+    <div class="list" id="recentRows" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h3>Budget status</h3>
+    <p class="note" style="margin-top:4px">Actual spending this month against your limits.</p>
+    <div id="budgetMini" style="margin-top:12px"></div>
+  </div>
+
+  <details class="card vex" id="vexCard">
+    <summary>
+      <div class="vexHead">
+        <div class="vexAvatar" aria-hidden="true"><img src="vex.png" alt=""></div>
+        <div style="flex:1;min-width:0">
+          <div class="vexRank">Financial prosecutor</div>
+          <h3 class="vexTitle">Auditor Vex</h3>
+          <div class="vexMeta" id="vexMode">Reviewing your questionable decisions...</div>
+        </div>
+        <div style="text-align:right"><span class="muted" style="font-size:11px;display:block">Score</span><span class="vexScore" id="vexScore">0/100</span></div>
+      </div>
+      <p class="vexVerdict" id="vexVerdict">Open for the verdict and latest evidence.</p>
+    </summary>
+    <div class="vexBody">
+      <div class="vexSpeech" id="vexSpeech" aria-live="polite">Enter your finances. I require evidence before issuing insults.</div>
+      <div class="vexLatest" id="vexLatest">No transaction submitted for interrogation.</div>
+      <button class="btn block alt" style="margin-top:12px" data-action="vex-judge">Judge me again</button>
+    </div>
+  </details>
+</section>
+
+<!-- MONEY -->
+<section class="page" id="money" aria-label="Money">
+  <div class="pageHead">
+    <h1>Money</h1>
+    <p>Accounts and transactions</p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <h3>Accounts</h3>
+      <button class="btn sm alt" data-action="seed-account">Add sample</button>
+    </div>
+    <div class="list" id="accountRows" style="margin-top:12px"></div>
+    <details class="fold">
+      <summary>+ Add account</summary>
+      <div class="fgrid">
+        <div><label for="accName">Name</label><input id="accName" placeholder="BPI Payroll"></div>
+        <div><label for="accType">Type</label>
+          <select id="accType"><option>Bank</option><option>Cash</option><option>E-wallet</option><option>Credit card</option></select></div>
+        <div><label for="accBalance">Balance</label><input id="accBalance" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="accInclude">Include in safe spend</label>
+          <select id="accInclude"><option value="yes">Yes</option><option value="no">No</option></select></div>
+        <button class="btn full" style="grid-column:1/-1" data-action="add-account">Add account</button>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <h3>Transactions</h3>
+      <button class="btn sm" data-action="open-quick">+ Add</button>
+    </div>
+    <div class="chips" style="margin:12px 0">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="Expense">Expenses</button>
+      <button class="chip" data-filter="Income">Income</button>
+    </div>
+    <div class="field">
+      <label for="txSearch" class="sr-only">Search</label>
+      <input id="txSearch" placeholder="Search description or category">
+    </div>
+    <div class="list" id="txRows"></div>
+  </div>
+</section>
+
+<!-- PLAN -->
+<section class="page" id="plan" aria-label="Plan">
+  <div class="pageHead">
+    <h1>Plan</h1>
+    <p>Bills, budgets, debts, and goals</p>
+  </div>
+
+  <div class="seg" role="tablist" aria-label="Plan sections">
+    <button class="active" data-sub-group="plan" data-sub-value="bills">Bills</button>
+    <button data-sub-group="plan" data-sub-value="budgets">Budgets</button>
+    <button data-sub-group="plan" data-sub-value="debts">Debts</button>
+    <button data-sub-group="plan" data-sub-value="goals">Goals</button>
+  </div>
+
+  <!-- Bills & subscriptions -->
+  <div class="subpanel active" data-sub-group="plan" data-sub-panel="bills">
+    <div class="card">
+      <h3>Add bill or subscription</h3>
+      <div class="fgrid" style="margin-top:12px">
+        <div><label for="billName">Name</label><input id="billName" placeholder="Meralco"></div>
+        <div><label for="billType">Type</label>
+          <select id="billType"><option>Bill</option><option>Subscription</option></select></div>
+        <div><label for="billAmount">Amount</label><input id="billAmount" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="billDay">Due day</label><input id="billDay" type="number" inputmode="numeric" min="1" max="31" value="15"></div>
+        <div><label for="billFreq">Frequency</label>
+          <select id="billFreq"><option>Monthly</option><option>Weekly</option><option>Quarterly</option><option>Annual</option></select></div>
+        <button class="btn" data-action="add-bill">Add</button>
+      </div>
+    </div>
+    <div class="list" id="billRows"></div>
+  </div>
+
+  <!-- Budgets -->
+  <div class="subpanel" data-sub-group="plan" data-sub-panel="budgets">
+    <div class="card">
+      <h3>Add category budget</h3>
+      <div class="fgrid" style="margin-top:12px">
+        <div><label for="budgetCategory">Category</label><input id="budgetCategory" placeholder="Food"></div>
+        <div><label for="budgetLimit">Monthly limit</label><input id="budgetLimit" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="budgetAlert">Alert at</label>
+          <select id="budgetAlert"><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option></select></div>
+        <button class="btn" data-action="add-budget">Add</button>
+      </div>
+    </div>
+    <div class="list" id="budgetCards"></div>
+  </div>
+
+  <!-- Debts -->
+  <div class="subpanel" data-sub-group="plan" data-sub-panel="debts">
+    <div class="card">
+      <h3>Add debt or loan</h3>
+      <div class="fgrid" style="margin-top:12px">
+        <div><label for="debtName">Name</label><input id="debtName" placeholder="Personal loan"></div>
+        <div><label for="debtBalance">Balance</label><input id="debtBalance" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="debtPayment">Payment</label><input id="debtPayment" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="debtFreq">Frequency</label>
+          <select id="debtFreq"><option>Monthly</option><option>Semi-monthly</option><option>Weekly</option><option>Biweekly</option></select></div>
+        <div><label for="debtDue">Next due</label><input id="debtDue" type="date"></div>
+        <button class="btn" data-action="add-debt">Add</button>
+      </div>
+    </div>
+    <div class="list" id="debtCards"></div>
+  </div>
+
+  <!-- Goals -->
+  <div class="subpanel" data-sub-group="plan" data-sub-panel="goals">
+    <div class="card">
+      <h3>Add savings goal</h3>
+      <div class="fgrid" style="margin-top:12px">
+        <div><label for="goalName">Goal</label><input id="goalName" placeholder="Toyota Vios fund"></div>
+        <div><label for="goalTarget">Target</label><input id="goalTarget" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="goalCurrent">Current</label><input id="goalCurrent" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="goalContribution">Contribution / cutoff</label><input id="goalContribution" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="goalDate">Target date</label><input id="goalDate" type="date"></div>
+        <button class="btn" data-action="add-goal">Add</button>
+      </div>
+    </div>
+    <div class="list" id="goalCards"></div>
+  </div>
+</section>
+
+<!-- MORE -->
+<section class="page" id="more" aria-label="More">
+  <div class="pageHead">
+    <h1>More</h1>
+    <p>Payroll, reports, and data</p>
+  </div>
+
+  <div class="seg" role="tablist" aria-label="More sections">
+    <button class="active" data-sub-group="more" data-sub-value="payroll">Payroll</button>
+    <button data-sub-group="more" data-sub-value="reports">Reports</button>
+    <button data-sub-group="more" data-sub-value="data">Data</button>
+  </div>
+
+  <!-- Payroll -->
+  <div class="subpanel active" data-sub-group="more" data-sub-panel="payroll">
+    <div class="card">
+      <h3>Semi-monthly payroll estimate</h3>
+      <p class="note" style="margin:4px 0 12px">Estimate only. Net pay is labeled by cutoff and can be posted as income.</p>
+      <label>Period</label>
+      <div class="seg" style="margin-bottom:12px">
+        <button class="active" data-setval="payPeriod" data-value="first">1st cutoff</button>
+        <button data-setval="payPeriod" data-value="second">2nd cutoff</button>
+        <button data-setval="payPeriod" data-value="month">Full month</button>
+      </div>
+      <select id="payPeriod" hidden>
+        <option value="first">First cutoff</option><option value="second">Second cutoff</option><option value="month">Full month</option>
+      </select>
+
+      <div class="fgrid">
+        <div><label for="basic">Monthly basic salary</label><input id="basic" type="number" inputmode="decimal" value="39200"></div>
+        <div><label for="workdays">Working days in period</label><input id="workdays" type="number" inputmode="numeric" value="11"></div>
+        <div class="full">
+          <label for="otReg">Regular OT hours ×1.25</label>
+          <div class="stepper">
+            <button type="button" data-nudge="otReg:-0.5" aria-label="Decrease regular OT">−</button>
+            <input id="otReg" type="number" inputmode="decimal" step=".5" value="0">
+            <button type="button" data-nudge="otReg:0.5" aria-label="Increase regular OT">+</button>
+          </div>
+        </div>
+        <div class="full">
+          <label for="otHol">Company holiday OT hours ×1.30</label>
+          <div class="stepper">
+            <button type="button" data-nudge="otHol:-0.5" aria-label="Decrease holiday OT">−</button>
+            <input id="otHol" type="number" inputmode="decimal" step=".5" value="0">
+            <button type="button" data-nudge="otHol:0.5" aria-label="Increase holiday OT">+</button>
+          </div>
+        </div>
+        <div class="full">
+          <label for="otEx">Excess OT hours ×1.69</label>
+          <div class="stepper">
+            <button type="button" data-nudge="otEx:-0.5" aria-label="Decrease excess OT">−</button>
+            <input id="otEx" type="number" inputmode="decimal" step=".5" value="0">
+            <button type="button" data-nudge="otEx:0.5" aria-label="Increase excess OT">+</button>
+          </div>
+        </div>
+        <div><label for="gas">Gas allowance</label><input id="gas" type="number" inputmode="decimal" value="0"></div>
+        <div><label for="otherDed">Other deductions</label><input id="otherDed" type="number" inputmode="decimal" value="0"></div>
+      </div>
+
+      <label style="margin-top:14px">Contribution schedule</label>
+      <div class="seg" style="margin-bottom:0">
+        <button class="active" data-setval="contribSchedule" data-value="split">Split</button>
+        <button data-setval="contribSchedule" data-value="first">1st cutoff</button>
+        <button data-setval="contribSchedule" data-value="second">2nd cutoff</button>
+      </div>
+      <select id="contribSchedule" hidden>
+        <option value="split">Split between cutoffs</option><option value="first">All on first cutoff</option><option value="second">All on second cutoff</option>
+      </select>
+    </div>
+
+    <div class="pay-total">
+      <div><span id="payLabel">Estimated net · 1st cutoff</span><strong id="netPay">₱0.00</strong><small id="paySub">Based on the inputs and contribution schedule above.</small></div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <h3>Payslip breakdown</h3>
+        <p class="note" style="margin:4px 0 10px">Earnings, deductions, and net for the selected period.</p>
+        <div class="receipt" id="payBreakdown"></div>
+      </div>
+      <div class="card">
+        <h3>Rates and contributions</h3>
+        <p class="note" style="margin:4px 0 10px">Hourly rates and statutory estimates for this period.</p>
+        <div class="receipt" id="rateRows"></div>
+      </div>
+    </div>
+
+    <p class="note" style="margin:0 2px 14px">Estimates use configurable assumptions: SSS 5% capped at ₱35,000, PhilHealth employee share 2.5% using a ₱10,000 to ₱100,000 base, and Pag-IBIG 2% capped at ₱10,000. Verify against the current official schedules and your payslip.</p>
+
+    <div class="payBar">
+      <div><small id="payBarLabel">Post as income · 1st cutoff</small><strong id="netPayBar">₱0.00</strong></div>
+      <button class="btn" data-action="post-payroll">Post as income</button>
+    </div>
+  </div>
+
+  <!-- Reports -->
+  <div class="subpanel" data-sub-group="more" data-sub-panel="reports">
+    <div class="mini">
+      <div><small>Income this month</small><strong id="repIncome" class="pos">₱0.00</strong></div>
+      <div><small>Expenses this month</small><strong id="repExpense" class="neg">₱0.00</strong></div>
+      <div><small>Unpaid bills</small><strong id="repBills">₱0.00</strong></div>
+      <div><small>Goal contributions</small><strong id="repGoals">₱0.00</strong></div>
+    </div>
+    <div class="card">
+      <h3>Daily spending · last 7 days</h3>
+      <div class="chart" id="barChart" style="margin-top:12px"></div><p class="chart-sum" id="barChartSum"></p>
+    </div>
+    <div class="card">
+      <h3>Net flow · last 14 days</h3>
+      <p class="note" style="margin-top:4px">Running total of income minus expenses.</p>
+      <div class="chart" id="lineChart" style="margin-top:10px"></div><p class="chart-sum" id="lineChartSum"></p>
+    </div>
+  </div>
+
+  <!-- Data -->
+  <div class="subpanel" data-sub-group="more" data-sub-panel="data">
+    <div class="card">
+      <h3>Backup and restore</h3>
+      <p class="note" style="margin:6px 0 12px">Export a JSON backup regularly. Browser storage can be cleared by iOS or Safari settings.</p>
+      <div class="actions">
+        <button class="btn" data-action="export">Export JSON</button>
+        <label class="btn alt" style="margin:0">Import JSON<input id="importFile" type="file" accept="application/json" hidden></label>
+        <button class="btn red" data-action="reset">Reset all data</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Storage status</h3>
+      <p id="storageStatus" style="margin-top:8px;font-size:14px"></p>
+      <p class="note" style="margin-top:10px">For dependable iPhone use, deploy this file as an HTTPS Progressive Web App. Files and Quick Look may display the interface without running JavaScript.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<!-- Vex chat bubble -->
+<div class="vexBubble" id="vexBubble" aria-live="polite">
+  <div class="vexBubbleMsg" id="vexBubbleMsg"></div>
+  <button class="vexBubbleBtn" id="vexBubbleBtn" aria-label="Open Auditor Vex"><img src="vex.png" alt="Auditor Vex"></button>
+</div>
+<nav class="tabbar" id="tabs" aria-label="Primary navigation">
+  <button class="tab active" data-page="overview" aria-current="page"><i aria-hidden="true">⌂</i>Home</button>
+  <button class="tab" data-page="money"><i aria-hidden="true">⇄</i>Money</button>
+  <button class="fab" data-action="open-quick" aria-label="Add transaction">+</button>
+  <button class="tab" data-page="plan"><i aria-hidden="true">▦</i>Plan</button>
+  <button class="tab" data-page="more"><i aria-hidden="true">☰</i>More</button>
+</nav>
+
+<!-- Quick add sheet -->
+<div class="sheetWrap" id="quickSheet">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div>
+    <div class="row">
+      <h2 id="sheetTitle">Add transaction</h2>
+      <button class="iconBtn" data-action="close-quick" aria-label="Close">×</button>
+    </div>
+
+    <div class="seg" style="margin:12px 0 0">
+      <button class="active" data-setval="txType" data-value="Expense">Expense</button>
+      <button data-setval="txType" data-value="Income">Income</button>
+    </div>
+    <select id="txType" hidden><option>Expense</option><option>Income</option></select>
+
+    <div class="amountBox">
+      <span aria-hidden="true">₱</span>
+      <input id="txAmount" type="number" inputmode="decimal" placeholder="0.00" aria-label="Amount">
+    </div>
+
+    <div class="field">
+      <label for="txDesc">Description</label>
+      <input id="txDesc" placeholder="e.g. Meralco, Lunch, Salary">
+    </div>
+
+    <div class="field">
+      <label>Category</label>
+      <div class="chips">
+        <button class="chip" data-setval="txCategory" data-value="Food">Food</button>
+        <button class="chip" data-setval="txCategory" data-value="Transport">Transport</button>
+        <button class="chip" data-setval="txCategory" data-value="Utilities">Utilities</button>
+        <button class="chip" data-setval="txCategory" data-value="Shopping">Shopping</button>
+        <button class="chip" data-setval="txCategory" data-value="Subscriptions">Subscriptions</button>
+        <button class="chip" data-setval="txCategory" data-value="Health">Health</button>
+        <button class="chip" data-setval="txCategory" data-value="Salary">Salary</button>
+        <button class="chip" data-setval="txCategory" data-value="Savings">Savings</button>
+      </div>
+      <input id="txCategory" placeholder="Or type a category" style="margin-top:8px">
+    </div>
+
+    <div class="field">
+      <label for="txAccount">Account</label>
+      <select id="txAccount"></select>
+    </div>
+
+    <p id="txError" class="note" role="alert" style="color:var(--red);min-height:18px;margin-bottom:8px;font-weight:650"></p>
+    <button class="btn block" data-action="add-tx">Save transaction</button>
+  </div>
+</div>
+
+<!-- Toast with undo -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toastMsg"></span>
+  <button id="toastUndo" data-undo hidden>Undo</button>
+</div>
+
+<script>
+(function(){'use strict';
+var KEY='paydayControlV1';
+var defaultState={accounts:[{id:1,name:'Cash',type:'Cash',balance:0,include:true}],transactions:[],budgets:[],bills:[{id:11,name:'Meralco',type:'Bill',amount:0,day:15,freq:'Monthly',paid:false},{id:12,name:'Water',type:'Bill',amount:0,day:15,freq:'Monthly',paid:false},{id:13,name:'WiFi',type:'Bill',amount:0,day:15,freq:'Monthly',paid:false},{id:14,name:'HBO Max Premium',type:'Subscription',amount:0,day:15,freq:'Monthly',paid:false},{id:15,name:'200GB iCloud',type:'Subscription',amount:0,day:15,freq:'Monthly',paid:false}],debts:[],goals:[],nextPayday:''};
+var state=load();var netEstimate=0;
+var txFilter='all',homeBill='unpaid',undoSnap=null,toastTimer=null;
+
+function $(id){return document.getElementById(id)}
+function all(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function n(id){var e=$(id);return e?Math.max(0,Number(e.value)||0):0}
+function v(id){var e=$(id);return e?e.value:''}
+function peso(x){return '₱'+Number(x||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(x){return String(x).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function uid(){return Date.now()+Math.floor(Math.random()*999)}
+function kv(a,b){return '<div class="kv"><span>'+a+'</span><b>'+b+'</b></div>'}
+
+function load(){try{var x=localStorage.getItem(KEY);return x?JSON.parse(x):clone(defaultState)}catch(e){return clone(defaultState)}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));$('storageStatus').textContent='Saved locally on this browser. Last update: '+new Date().toLocaleString();}catch(e){$('storageStatus').textContent='Local storage is unavailable. Use Export JSON to keep a backup.'}}
+function accountName(id){var a=state.accounts.find(function(x){return String(x.id)===String(id)});return a?a.name:'Unknown'}
+function monthExpense(cat){var now=new Date();return state.transactions.filter(function(t){var d=new Date(t.date);return t.type==='Expense'&&t.category.toLowerCase()===cat.toLowerCase()&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce(function(s,t){return s+t.amount},0)}
+
+function payLabel(p){return p==='month'?'Full month':(p==='second'?'2nd cutoff':'1st cutoff')}
+
+/* ---------- Payroll (calculations unchanged) ---------- */
+function calcPayroll(){var p=v('payPeriod'),f=p==='month'?1:.5,b=n('basic'),base=b*f,hr=(b*12)/(299*8),reg=hr*1.25*n('otReg'),hol=hr*1.3*n('otHol'),ex=hr*1.69*n('otEx'),rice=n('workdays')*36,med=40*f,gas=n('gas'),gross=base+reg+hol+ex+rice+med+gas,c={sss:Math.min(b,35000)*.05,phil:Math.min(Math.max(b,10000),100000)*.025,pag:Math.min(b,10000)*.02},sch=v('contribSchedule'),cf=p==='month'?1:((sch==='split') ? 0.5 : ((sch===p) ? 1 : 0)),sss=c.sss*cf,phil=c.phil*cf,pag=c.pag*cf,projected=p==='month'?gross:gross*2,taxable=Math.max(0,projected-c.sss-c.phil-c.pag),tax=taxCalc(taxable)*f,ded=sss+phil+pag+tax+n('otherDed');netEstimate=Math.max(0,gross-ded);
+  var label=payLabel(p),badge=$('cutoffBadge'),payLbl=$('payLabel'),barLbl=$('payBarLabel'),bar=$('netPayBar');
+  if(badge)badge.textContent=label;
+  if(payLbl)payLbl.textContent='Estimated net · '+label;
+  if(barLbl)barLbl.textContent='Post as income · '+label;
+  $('netPay').textContent=peso(netEstimate);
+  if(bar)bar.textContent=peso(netEstimate);
+  var earn=[['Basic',base],['Regular OT',reg],['Holiday OT',hol],['Excess OT',ex],['Rice allowance',rice],['Medical allowance',med],['Gas allowance',gas]];
+  var dedRows=[['SSS (estimate)',-sss],['PhilHealth (estimate)',-phil],['Pag-IBIG (estimate)',-pag],['Tax (estimate)',-tax],['Other deductions',-n('otherDed')]];
+  $('payBreakdown').innerHTML=
+    earn.map(function(r){return kv(r[0],peso(r[1]))}).join('')+
+    '<div class="kv t"><span>Gross pay</span><b>'+peso(gross)+'</b></div>'+
+    dedRows.map(function(r){return '<div class="kv"><span>'+esc(r[0])+'</span><b class="neg">−'+peso(Math.abs(r[1]))+'</b></div>'}).join('')+
+    '<div class="kv t ded"><span>Total deductions</span><b>−'+peso(ded)+'</b></div>'+
+    '<div class="kv t net"><span>Estimated net</span><b>'+peso(netEstimate)+'</b></div>';
+  var rates=[['Hourly rate',hr],['Regular OT / hr',hr*1.25],['Holiday OT / hr',hr*1.3],['Excess OT / hr',hr*1.69],['SSS this period',sss],['PhilHealth this period',phil],['Pag-IBIG this period',pag],['Tax this period',tax]];
+  $('rateRows').innerHTML=rates.map(function(r){return kv(r[0],peso(r[1]))}).join('');
+}
+function taxCalc(x){if(x<=20833)return 0;if(x<=33333)return(x-20833)*.15;if(x<=66667)return 1875+(x-33333)*.20;if(x<=166667)return 10308.33+(x-66667)*.25;if(x<=666667)return 40308.33+(x-166667)*.30;return 161808.33+(x-666667)*.35}
+
+/* ---------- Vex (judgment text unchanged) ---------- */
+function transactionJudgment(t){var d=(t.desc||'').toLowerCase(),c=(t.category||'').toLowerCase(),a=Number(t.amount)||0,key=(d+' '+c),income=t.type==='Income';if(income){if(c.indexOf('salary')>=0||key.indexOf('payroll')>=0)return 'Your salary arrived. Try not to turn it into receipts before it learns your name.';return 'Money came in. A rare sighting. Do not frighten it away with a checkout button.'}if(/saving|investment|goal|vios/.test(key))return 'Annoyingly responsible. You paid your future self before feeding your impulses.';if(/rent|meralco|electric|water|wifi|utility|insurance|medical|medicine|health/.test(key))return 'Necessary expense. You may proceed without pretending basic survival is a personality achievement.';if(/loan|debt|payment/.test(key))return 'Paying yesterday\u2019s decisions with today\u2019s money. At least the consequences are finally receiving attention.';if(/gacha|steam|game|gaming|skin|top.?up/.test(key))return 'You exchanged real labor for imaginary assets. Somewhere, a game executive is upgrading a kitchen.';if(/coffee|milk.?tea|snack|delivery|foodpanda|grabfood|restaurant|takeout/.test(key))return a>=500?'\u20b1'+a.toLocaleString('en-PH')+' for convenience and temporary satisfaction. Your groceries would like to file a complaint.':'A small treat, naturally. Financial leaks also prefer to enter through small holes.';if(/subscription|netflix|hbo|spotify|icloud|premium/.test(key))return 'Another recurring charge. Your bank account is collecting subscriptions like they are achievements.';if(/shopping|shopee|lazada|gadget|phone|clothes|fashion/.test(key))return 'You wanted it, therefore it became an emergency. Remarkable fraud committed against your own budget.';if(/transport|gas|fuel|fare/.test(key))return 'Transport is valid. The expensive detour disguised as convenience is less convincing.';if(a>=5000)return '\u20b1'+a.toLocaleString('en-PH')+' left your account in one transaction. I hope the purchase also came with a financial recovery plan.';if(a>=1000)return 'A four-digit expense approved with suspicious confidence. Your future self has requested the meeting minutes.';return 'Only \u20b1'+a.toLocaleString('en-PH')+', you say. Financial incompetence is often sold in affordable installments.'}
+function showVexBubble(msg){
+  var bubble=$('vexBubble'),txt=$('vexBubbleMsg');
+  if(!bubble||!txt)return;
+  txt.textContent=msg;
+  bubble.classList.add('show');
+  clearTimeout(window._vexBubbleT);
+  window._vexBubbleT=setTimeout(function(){bubble.classList.remove('show')},5200);
+}
+function latestVexTransaction(){var t=state.transactions[0],speech=$('vexSpeech'),mode=$('vexMode'),el=$('vexLatest'),ver=$('vexVerdict');
+  if(!el)return;
+  if(!t){el.textContent='No transaction submitted for interrogation.';if(ver)ver.textContent=speech?speech.textContent:'Open for the verdict and latest evidence.';return}
+  var j=transactionJudgment(t);
+  el.innerHTML='<b>Latest evidence:</b> '+esc(t.desc)+' · '+peso(t.amount)+'<br>'+esc(j);
+  if(ver)ver.textContent=j;
+}
+function monthly(a,f){return a*({Monthly:1,'Semi-monthly':2,Weekly:52/12,Biweekly:26/12,Quarterly:1/3,Annual:1/12}[f]||1)}
+function vexData(){var included=state.accounts.filter(function(a){return a.include}).reduce(function(s,a){return s+a.balance},0),expenses=state.transactions.filter(function(t){return t.type==='Expense'}).reduce(function(s,t){return s+t.amount},0),income=state.transactions.filter(function(t){return t.type==='Income'}).reduce(function(s,t){return s+t.amount},0),subs=state.bills.filter(function(b){return b.type==='Subscription'&&!b.paid}).reduce(function(s,b){return s+b.amount},0),goal=state.goals.reduce(function(s,g){return s+g.contribution},0),debt=state.debts.reduce(function(s,d){return s+monthly(d.payment,d.freq)},0),budgetOver=state.budgets.filter(function(b){return b.limit&&monthExpense(b.category)>b.limit}).length;return{included:included,expenses:expenses,income:income,subs:subs,goal:goal,debt:debt,budgetOver:budgetOver}}
+function judgeVex(randomize){latestVexTransaction();var d=vexData(),ratio=d.income?d.expenses/d.income:0,score=70;score+=d.goal>0?15:-12;score-=Math.min(35,Math.round(ratio*35));score-=Math.min(20,d.budgetOver*10);score-=d.subs>0?5:0;score+=d.included>0?5:-8;score=Math.max(0,Math.min(100,score));var pool=[];if(!d.income&&d.expenses)pool.push('You logged expenses without income. Bold strategy. Apparently your wallet is expected to reproduce by itself.');if(d.income&&ratio>1)pool.push('You spent more than you earned. Mathematics has reviewed your lifestyle and requested immediate separation.');if(d.income&&ratio>.7)pool.push('You treated your income like a limited-time offer and rushed to make it disappear. Outstanding commitment to instability.');if(d.budgetOver)pool.push('You created a budget, exceeded it, and kept spending. That was not planning. That was decorative arithmetic.');if(d.subs>0)pool.push('You are paying '+peso(d.subs)+' in active subscriptions. How generous of you to sponsor companies whose apps you probably forgot to open.');if(d.goal<=0)pool.push('No goal contribution detected. Your future self has reviewed the evidence and declined to defend you.');if(d.goal>0&&d.expenses>d.goal*3)pool.push('Your spending is more than three times your goal contribution. The dream is not delayed by circumstances. It is being mugged by your checkout button.');if(d.debt>0&&d.expenses>d.debt)pool.push('You spent more on discretionary transactions than your monthly debt payments. Apparently interest was not humiliating enough.');if(d.included<0)pool.push('Your included balance is negative. Even zero looked at your account and decided to keep its distance.');if(!pool.length&&d.goal>0)pool.push('Annoyingly competent. You funded your goals and avoided obvious financial stupidity. Do not make me compliment you twice.');if(!pool.length)pool.push('Not enough evidence yet. Add your real transactions so I can replace suspicion with documented disappointment.');var idx=randomize?Math.floor(Math.random()*pool.length):0,verdict=score>=80?'Verdict: Suspiciously responsible':score>=60?'Verdict: Barely defensible':score>=40?'Verdict: Financially questionable':'Verdict: Wallet misconduct';$('vexSpeech').textContent=pool[idx];$('vexScore').textContent=score+'/100';$('vexMode').textContent=verdict;var ver=$('vexVerdict');if(ver)ver.textContent=pool[idx];var c=$('vexCard');if(c){c.classList.remove('vexPulse');void c.offsetWidth;c.classList.add('vexPulse')}}
+
+/* ---------- Bills status ---------- */
+function billStatus(b){
+  if(b.paid)return{k:'paid',label:'Paid'};
+  var t=new Date(),today=new Date(t.getFullYear(),t.getMonth(),t.getDate());
+  var dim=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();
+  var due=new Date(t.getFullYear(),t.getMonth(),Math.min(b.day,dim));
+  var diff=Math.round((due-today)/864e5);
+  if(diff<0)return{k:'over',label:'Overdue'};
+  if(diff<=7)return{k:'soon',label:diff===0?'Due today':'Due in '+diff+(diff===1?' day':' days')};
+  return{k:'up',label:'Upcoming'};
+}
+
+/* ---------- Item templates ---------- */
+function txItem(t,full){
+  var inc=t.type==='Income';
+  return '<div class="item" style="--c:'+(inc?'var(--green)':'var(--red)')+'"><div class="main"><b>'+esc(t.desc)+'</b><small>'+esc(t.category)+' · '+esc(accountName(t.account))+' · '+t.date+'</small>'+
+    (full?'<details><summary>Why? Auditor Vex</summary><p class="vexWhy">'+esc(transactionJudgment(t))+'</p></details>':'')+
+    '</div><div class="amt '+(inc?'pos':'neg')+'">'+(inc?'+':'−')+peso(t.amount)+'</div>'+
+    (full?'<button class="iconBtn" data-delete="tx" data-id="'+t.id+'" aria-label="Delete transaction">×</button>':'')+'</div>';
+}
+function billItem(b){
+  var st=billStatus(b),c=b.type==='Subscription'?'var(--accent-ink)':'var(--accent)';
+  return '<div class="item" style="--c:'+c+'"><div class="main"><b>'+esc(b.name)+'</b><small>'+b.type+' · '+b.freq+' · Day '+b.day+'</small><div style="margin-top:6px"><span class="tag '+st.k+'">'+st.label+'</span></div></div>'+
+    '<div class="amt">'+peso(b.amount)+'</div><div class="stack"><button class="pill '+(b.paid?'on':'')+'" data-paid="'+b.id+'">'+(b.paid?'Paid ✓':'Mark paid')+'</button><button class="iconBtn" data-delete="bill" data-id="'+b.id+'" aria-label="Delete bill">×</button></div></div>';
+}
+function budgetItem(b){
+  var spent=monthExpense(b.category),pct=b.limit?spent/b.limit*100:0,col=pct>=100?'var(--red)':pct>=b.alert?'var(--amber)':'var(--green)';
+  return '<div class="item" style="--c:'+col+'"><div class="main"><b>'+esc(b.category)+'</b><small>'+peso(spent)+' of '+peso(b.limit)+' · alert at '+b.alert+'%</small><div class="progress" style="margin-top:8px"><div style="width:'+Math.min(100,pct)+'%;background:'+col+'"></div></div></div><div class="amt">'+pct.toFixed(0)+'%</div><button class="iconBtn" data-delete="budget" data-id="'+b.id+'" aria-label="Delete budget">×</button></div>';
+}
+function debtItem(d){
+  var pm=monthly(d.payment,d.freq),months=pm?d.balance/pm:0;
+  return '<div class="item" style="--c:var(--red)"><div class="main"><b>'+esc(d.name)+'</b><small>Balance '+peso(d.balance)+' · '+peso(d.payment)+' '+d.freq.toLowerCase()+'</small><small>Next due: '+(d.due||'not set')+' · '+(months?'≈ '+Math.ceil(months)+' months left':'N/A')+' (excl. interest)</small></div><button class="iconBtn" data-delete="debt" data-id="'+d.id+'" aria-label="Delete debt">×</button></div>';
+}
+function goalItem(g){
+  var pct=g.target?g.current/g.target*100:0,remain=Math.max(0,g.target-g.current),periods=g.contribution?Math.ceil(remain/g.contribution):0;
+  return '<div class="item" style="--c:var(--teal)"><div class="main"><b>'+esc(g.name)+'</b><small>'+peso(g.current)+' of '+peso(g.target)+' · '+pct.toFixed(1)+'%</small><div class="progress" style="margin-top:8px"><div style="width:'+Math.min(100,pct)+'%;background:var(--teal)"></div></div><small style="margin-top:6px">'+(periods?periods+' cutoffs to go':'Set a contribution')+' · target '+(g.date||'not set')+'</small></div><button class="iconBtn" data-delete="goal" data-id="'+g.id+'" aria-label="Delete goal">×</button></div>';
+}
+
+/* ---------- Renders ---------- */
+function renderAccounts(){
+  $('accountRows').innerHTML=state.accounts.length?state.accounts.map(function(a){
+    return '<div class="item" style="--c:'+(a.include?'var(--blue)':'#b8c0cf')+'"><div class="main"><b>'+esc(a.name)+'</b><small>'+esc(a.type)+' · '+(a.include?'Included in safe spend':'Excluded from safe spend')+'</small></div><div class="amt">'+peso(a.balance)+'</div><button class="iconBtn" data-delete="account" data-id="'+a.id+'" aria-label="Delete account">×</button></div>'
+  }).join(''):'<div class="empty">No accounts yet. Add one below.</div>';
+  $('txAccount').innerHTML=state.accounts.map(function(a){return'<option value="'+a.id+'">'+esc(a.name)+'</option>'}).join('');
+}
+function renderTx(){
+  var term=v('txSearch').toLowerCase();
+  var list=state.transactions.filter(function(t){
+    var okType=txFilter==='all'||t.type===txFilter;
+    var okTerm=!term||t.desc.toLowerCase().indexOf(term)>=0||t.category.toLowerCase().indexOf(term)>=0;
+    return okType&&okTerm;
+  });
+  $('txRows').innerHTML=list.length?list.map(function(t){return txItem(t,true)}).join(''):'<div class="empty">No transactions match.</div>';
+}
+function renderRecent(){
+  $('recentRows').innerHTML=state.transactions.length?state.transactions.slice(0,5).map(function(t){return txItem(t,false)}).join(''):'<div class="empty">No transactions yet. Tap + to add one.</div>';
+}
+function renderBudgets(){
+  $('budgetCards').innerHTML=state.budgets.length?state.budgets.map(budgetItem).join(''):'<div class="empty">Add category budgets such as Food, Transport, Utilities, and Shopping.</div>';
+  var mini=state.budgets.slice(0,4).map(function(b){var x=monthExpense(b.category),p=b.limit?x/b.limit*100:0,col=p>=100?'var(--red)':p>=b.alert?'var(--amber)':'var(--green)';
+    return '<div style="margin-bottom:10px"><div class="row" style="margin-bottom:6px;font-size:14px"><span>'+esc(b.category)+'</span><b>'+p.toFixed(0)+'%</b></div><div class="progress"><div style="width:'+Math.min(100,p)+'%;background:'+col+'"></div></div></div>'}).join('');
+  $('budgetMini').innerHTML=mini||'<p class="note">No category budgets configured. Add them in Plan.</p>';
+}
+function renderBills(){
+  var sorted=state.bills.slice().sort(function(a,b){return a.day-b.day});
+  $('billRows').innerHTML=sorted.length?sorted.map(billItem).join(''):'<div class="empty">No bills yet. Add your recurring bills above.</div>';
+}
+function renderUpcoming(next){
+  var today=new Date();today=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  if(!next) next=state.nextPayday?new Date(state.nextPayday+'T23:59:59'):new Date(today.getFullYear(),today.getMonth(),today.getDate()+15);
+  var list=state.bills.slice();
+  if(homeBill==='paid') list=list.filter(function(b){return b.paid});
+  else if(homeBill==='unpaid') list=list.filter(function(b){return !b.paid});
+  else if(homeBill==='due') list=list.filter(function(b){if(b.paid)return false;var due=billDueDate(b,today);if(due<today)due=new Date(today.getFullYear(),today.getMonth()+1,b.day);return due<=next});
+  list.sort(function(a,b){var sa=billStatus(a).k==='over'?0:billStatus(a).k==='soon'?1:2,sb=billStatus(b).k==='over'?0:billStatus(b).k==='soon'?1:2;return sa-sb||a.day-b.day});
+  if(!list.length){$('upcomingMini').innerHTML='<div class="empty">Nothing here.</div>';return}
+  if(homeBill==='due'||homeBill==='unpaid'){
+    var over=list.filter(function(b){return billStatus(b).k==='over'}),soon=list.filter(function(b){return billStatus(b).k==='soon'}),rest=list.filter(function(b){var k=billStatus(b).k;return k!=='over'&&k!=='soon'});
+    var out='';
+    if(over.length) out+='<div class="groupLabel">Overdue</div><div class="list" style="margin-bottom:8px">'+over.map(billItem).join('')+'</div>';
+    if(soon.length) out+='<div class="groupLabel">Due soon</div><div class="list" style="margin-bottom:8px">'+soon.map(billItem).join('')+'</div>';
+    if(rest.length) out+='<div class="groupLabel">'+(homeBill==='due'?'Before next payday':'Upcoming')+'</div><div class="list">'+rest.slice(0,6).map(billItem).join('')+'</div>';
+    $('upcomingMini').innerHTML=out;
+  }else{
+    $('upcomingMini').innerHTML='<div class="list">'+list.slice(0,8).map(billItem).join('')+'</div>';
+  }
+}
+function renderDebts(){
+  $('debtCards').innerHTML=state.debts.length?state.debts.map(debtItem).join(''):'<div class="empty">Add loans to monitor payment frequency and payoff runway.</div>';
+}
+function renderGoals(){
+  $('goalCards').innerHTML=state.goals.length?state.goals.map(goalItem).join(''):'<div class="empty">Add an emergency fund, Vios fund, or another savings target.</div>';
+}
+function billDueDate(b,today){
+  var dim=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+  return new Date(today.getFullYear(),today.getMonth(),Math.min(b.day,dim));
+}
+function renderDateStrip(){
+  var t=new Date(),today=new Date(t.getFullYear(),t.getMonth(),t.getDate()),html='';
+  for(var i=-3;i<=3;i++){
+    var d=new Date(t.getFullYear(),t.getMonth(),t.getDate()+i),dd=d.getDate();
+    var sev='';
+    state.bills.forEach(function(b){if(b.paid||b.day!==dd)return;var st=billStatus(b);if(st.k==='over')sev='over';else if(st.k==='soon'&&sev!=='over')sev='soon';else if(!sev)sev='soon'});
+    html+='<div class="ds'+(i===0?' today':'')+'"><small>'+d.toLocaleDateString('en-PH',{weekday:'short'}).slice(0,3)+'</small><b>'+dd+'</b><i class="'+sev+'"></i></div>';
+  }
+  $('dateStrip').innerHTML=html;
+}
+function renderHeader(){
+  var h=new Date().getHours(),g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  var unpaid=state.bills.filter(function(b){return !b.paid}).length;
+  $('greetTitle').textContent=g;
+  $('greetSub').textContent=unpaid?(unpaid+' bill'+(unpaid===1?'':'s')+' unpaid · '+state.accounts.length+' account'+(state.accounts.length===1?'':'s')):'All bills marked paid · '+state.accounts.length+' account'+(state.accounts.length===1?'':'s');
+}
+function renderOverview(){
+  var account=state.accounts.filter(function(a){return a.include}).reduce(function(s,a){return s+a.balance},0),today=new Date(),today0=new Date(today.getFullYear(),today.getMonth(),today.getDate()),next=state.nextPayday?new Date(state.nextPayday+'T23:59:59'):new Date(today.getFullYear(),today.getMonth(),today.getDate()+15),
+  commBills=state.bills.filter(function(b){if(b.paid)return false;var due=billDueDate(b,today0);if(due<today0)due=new Date(today.getFullYear(),today.getMonth()+1,b.day);return due<=next}).reduce(function(s,b){return s+b.amount},0),
+  commDebt=state.debts.filter(function(d){return d.due&&new Date(d.due+'T23:59:59')<=next}).reduce(function(s,d){return s+d.payment},0),
+  goal=state.goals.reduce(function(s,g){return s+g.contribution},0),dueCommit=commBills+commDebt,commit=dueCommit+goal,safe=account-commit;
+  $('accountTotal').textContent=peso(account);
+  $('committed').textContent=peso(dueCommit);
+  $('goalCommit').textContent=peso(goal);
+  $('safeSpend').textContent=peso(safe);
+  $('safeSpend').className='hero-amt '+(safe>=0?'positive':'negative');
+  var hero=$('heroCard'),until=$('heroUntil');
+  if(hero)hero.classList.toggle('est',netEstimate>0&&v('payPeriod')!=='month');
+  if(until)until.textContent='until '+next.toLocaleDateString('en-PH',{month:'short',day:'numeric'});
+  $('paydayMessage').className=safe>=0?'heroMsg':'heroMsg dangerMsg';
+  $('paydayMessage').textContent=safe>=0?peso(safe)+' left after '+peso(dueCommit)+' in bills/debt due and '+peso(goal)+' in goal set-asides before next payday.':'Short by '+peso(Math.abs(safe))+'. Bills/debt due '+peso(dueCommit)+' plus goal set-asides '+peso(goal)+' exceed included balances '+peso(account)+'.';
+  var sub=$('heroSub');
+  if(sub) sub.textContent='Actual included balances '+peso(account)+' minus commitments due before next payday. Payroll estimate is separate.';
+
+  var unpaid=state.bills.filter(function(b){return !b.paid}),unpaidAmt=unpaid.reduce(function(s,b){return s+b.amount},0);
+  var overdue=unpaid.filter(function(b){return billStatus(b).k==='over'}),soon=unpaid.filter(function(b){return billStatus(b).k==='soon'});
+  var dueBefore=unpaid.filter(function(b){var due=billDueDate(b,today0);if(due<today0)due=new Date(today.getFullYear(),today.getMonth()+1,b.day);return due<=next});
+  var overBudgets=state.budgets.filter(function(b){return b.limit&&monthExpense(b.category)>b.limit});
+  var avgBudget=state.budgets.length?state.budgets.reduce(function(s,b){return s+(b.limit?Math.min(100,monthExpense(b.category)/b.limit*100):0)},0)/state.budgets.length:0;
+  var debtPay=state.debts.reduce(function(s,d){return s+d.payment},0);
+  var avgGoal=state.goals.length?state.goals.reduce(function(s,g){return s+(g.target?Math.min(100,g.current/g.target*100):0)},0)/state.goals.length:0;
+  var paidShare=state.bills.length?(state.bills.length-unpaid.length)/state.bills.length*100:0;
+
+  var att=[];
+  if(overdue.length) att.push({cls:'over',goto:'plan:bills',title:overdue.length+' overdue bill'+(overdue.length===1?'':'s'),sub:peso(overdue.reduce(function(s,b){return s+b.amount},0))+' past due — mark paid or review.'});
+  if(soon.length) att.push({cls:'soon',goto:'plan:bills',title:soon.length+' bill'+(soon.length===1?'':'s')+' due within 7 days',sub:peso(soon.reduce(function(s,b){return s+b.amount},0))+' due soon.'});
+  if(dueBefore.length&&homeBill!=='due') att.push({cls:'soon',home:'due',title:dueBefore.length+' unpaid bill'+(dueBefore.length===1?'':'s')+' before next payday',sub:peso(commBills)+' counted in safe-to-spend.'});
+  if(overBudgets.length) att.push({cls:'warn',goto:'plan:budgets',title:overBudgets.length+' budget'+(overBudgets.length===1?'':'s')+' over limit',sub:overBudgets.map(function(b){return esc(b.category)}).join(', ')+'.'});
+  if(safe<0) att.push({cls:'over',goto:'plan:bills',title:'Commitments exceed available balances',sub:'Short by '+peso(Math.abs(safe))+' before next payday.'});
+  $('attention').innerHTML=att.length?'<div class="card" style="padding:12px"><h3 style="margin-bottom:10px">Needs attention</h3>'+att.slice(0,4).map(function(a){return '<button class="alertRow '+a.cls+'" '+(a.goto?'data-goto="'+a.goto+'"':'data-home="'+a.home+'"')+'><span class="dot"></span><span style="flex:1;min-width:0"><b>'+a.title+'</b><small>'+a.sub+'</small></span></button>'}).join('')+'</div>':'';
+
+  $('tiles').innerHTML=
+    '<button class="tile '+(overBudgets.length?'warn':'')+'" data-goto="plan:budgets"><b>Budgets</b><div><strong>'+(overBudgets.length?overBudgets.length+' over limit':(state.budgets.length?'On track':'Set up'))+'</strong><small>'+state.budgets.length+' categor'+(state.budgets.length===1?'y':'ies')+' \u00b7 actual this month</small></div><div class="bar"><i style="width:'+avgBudget.toFixed(0)+'%"></i></div></button>'+
+    '<button class="tile '+(overdue.length?'warn':'')+'" data-goto="plan:bills"><b>Bills</b><div><strong>'+unpaid.length+' unpaid</strong><small>'+peso(unpaidAmt)+' total \u00b7 '+overdue.length+' overdue</small></div><div class="bar"><i style="width:'+paidShare.toFixed(0)+'%"></i></div></button>'+
+    '<button class="tile" data-goto="plan:debts"><b>Debts</b><div><strong>'+state.debts.length+' loan'+(state.debts.length===1?'':'s')+'</strong><small>'+peso(debtPay)+' per payment cycle</small></div><div class="bar" style="visibility:hidden"><i></i></div></button>'+
+    '<button class="tile" data-goto="plan:goals"><b>Goals</b><div><strong>'+avgGoal.toFixed(0)+'% avg</strong><small>'+state.goals.length+' goal'+(state.goals.length===1?'':'s')+' \u00b7 set-asides '+peso(goal)+'</small></div><div class="bar"><i style="width:'+avgGoal.toFixed(0)+'%"></i></div></button>';
+
+  renderUpcoming(next);
+  renderRecent();
+  renderBudgets();
+  judgeVex(false);
+}
+
+/* ---------- Reports ---------- */
+function isoDay(offset){return new Date(Date.now()-offset*864e5).toISOString().slice(0,10)}
+function barSVG(labels,vals){
+  var W=320,H=170,max=Math.max(1,Math.max.apply(null,vals)),bw=(W-20)/labels.length,out='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Daily spending, last 7 days">';
+  out+='<line x1="10" x2="'+(W-10)+'" y1="'+(H-24)+'" y2="'+(H-24)+'" stroke="var(--line)"/>';
+  labels.forEach(function(l,i){
+    var h=(vals[i]/max)*(H-44),x=10+i*bw+bw*.2,w=bw*.6,y=H-24-h;
+    out+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+Math.max(h,vals[i]>0?3:0).toFixed(1)+'" rx="5" fill="var(--accent)"><title>'+l+': '+peso(vals[i])+'</title></rect>';
+    out+='<text x="'+(x+w/2).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+l+'</text>';
+  });
+  return out+'</svg>';
+}
+function lineSVG(labels,vals){
+  var W=320,H=170,n2=vals.length,min=Math.min(0,Math.min.apply(null,vals)),max=Math.max(0,Math.max.apply(null,vals)),range=(max-min)||1,pts=[];
+  vals.forEach(function(val,i){var x=10+i*(W-20)/Math.max(1,n2-1),y=H-24-((val-min)/range)*(H-44);pts.push(x.toFixed(1)+','+y.toFixed(1))});
+  var zeroY=H-24-((0-min)/range)*(H-44);
+  var out='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Net flow, last 14 days">';
+  out+='<line x1="10" x2="'+(W-10)+'" y1="'+zeroY.toFixed(1)+'" y2="'+zeroY.toFixed(1)+'" stroke="var(--line)" stroke-dasharray="4 4"/>';
+  out+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  labels.forEach(function(l,i){if(i%2===0||i===n2-1)out+='<text x="'+(10+i*(W-20)/Math.max(1,n2-1)).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="10" fill="var(--muted)">'+l+'</text>'});
+  return out+'</svg>';
+}
+function renderReports(){
+  var mon=new Date().toISOString().slice(0,7);
+  var inc=state.transactions.filter(function(t){return t.type==='Income'&&t.date.slice(0,7)===mon}).reduce(function(s,t){return s+t.amount},0);
+  var exp=state.transactions.filter(function(t){return t.type==='Expense'&&t.date.slice(0,7)===mon}).reduce(function(s,t){return s+t.amount},0);
+  var unpaidAmt=state.bills.filter(function(b){return !b.paid}).reduce(function(s,b){return s+b.amount},0);
+  var goals=state.goals.reduce(function(s,g){return s+g.contribution},0);
+  $('repIncome').textContent=peso(inc);$('repExpense').textContent=peso(exp);$('repBills').textContent=peso(unpaidAmt);$('repGoals').textContent=peso(goals);
+
+  var l7=[],v7=[],v7sum=0;
+  for(var i=6;i>=0;i--){var key=isoDay(i),amt=state.transactions.filter(function(t){return t.type==='Expense'&&t.date===key}).reduce(function(s,t){return s+t.amount},0);
+    l7.push(new Date(Date.now()-i*864e5).toLocaleDateString('en-PH',{weekday:'short'}).slice(0,3));v7.push(amt);v7sum+=amt;}
+  $('barChart').innerHTML=barSVG(l7,v7);
+  if($('barChartSum'))$('barChartSum').textContent='Total '+peso(v7sum)+' over the last 7 days.';
+
+  var l14=[],cum=[],run=0;
+  for(var j=13;j>=0;j--){var k=isoDay(j);
+    run+=state.transactions.filter(function(t){return t.date===k}).reduce(function(s,t){return s+(t.type==='Income'?t.amount:-t.amount)},0);
+    cum.push(run);l14.push(new Date(Date.now()-j*864e5).getDate().toString());}
+  $('lineChart').innerHTML=lineSVG(l14,cum);
+  if($('lineChartSum'))$('lineChartSum').textContent='Running net: '+peso(cum[cum.length-1]||0)+' as of today (income minus expenses, last 14 days).';
+}
+
+/* ---------- Rendering orchestration ---------- */
+function render(){renderAccounts();renderTx();renderBills();renderDebts();renderGoals();renderDateStrip();renderHeader();renderOverview();renderReports();calcPayroll();syncSegs();save()}
+
+/* ---------- UI state helpers ---------- */
+function showPage(name){
+  all('.page').forEach(function(p){p.classList.toggle('active',p.id===name)});
+  all('.tab[data-page]').forEach(function(t){var on=t.getAttribute('data-page')===name;t.classList.toggle('active',on);if(on)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function setSub(g,val){
+  all('[data-sub-value][data-sub-group="'+g+'"]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-sub-value')===val)});
+  all('[data-sub-panel][data-sub-group="'+g+'"]').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-sub-panel')===val)});
+}
+function setVal(name,val){
+  var el=$(name);if(!el)return;
+  el.value=val;
+  el.dispatchEvent(new Event('change',{bubbles:true}));
+  syncSegs();
+}
+function syncSegs(){
+  all('[data-setval]').forEach(function(b){var el=$(b.getAttribute('data-setval'));b.classList.toggle('active',!!el&&el.value===b.getAttribute('data-value'))});
+}
+function nudge(id,delta){
+  var el=$(id);if(!el)return;
+  el.value=Math.max(0,(Number(el.value)||0)+delta);
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+}
+function clearFields(ids){ids.forEach(function(id){var e=$(id);if(e)e.value=''})}
+
+/* ---------- Quick add sheet ---------- */
+function openQuick(){
+  $('txError').textContent='';
+  $('txType').value='Expense';
+  syncSegs();
+  $('quickSheet').classList.add('open');
+  setTimeout(function(){$('txAmount').focus()},80);
+}
+function closeQuick(){$('quickSheet').classList.remove('open')}
+function resetQuick(){
+  $('txDesc').value='';$('txAmount').value='';$('txCategory').value='';$('txError').textContent='';
+  $('txType').value='Expense';syncSegs();
+}
+
+/* ---------- Undo toast ---------- */
+function toast(msg,before){
+  $('toastMsg').textContent=msg;
+  undoSnap=before||null;
+  $('toastUndo').hidden=!before;
+  $('toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(hideToast,5000);
+}
+function hideToast(){$('toast').classList.remove('show');undoSnap=null}
+function undoLast(){
+  if(!undoSnap)return;
+  state=JSON.parse(undoSnap);
+  undoSnap=null;
+  render();
+  hideToast();
+}
+
+/* Run a mutation, re-render, and offer undo */
+function act(msg,fn){
+  var before=JSON.stringify(state);
+  fn();
+  render();
+  toast(msg,before);
+}
+
+/* ---------- Actions ---------- */
+function addTransaction(desc,type,amount,category,account){var a=state.accounts.find(function(x){return String(x.id)===String(account)});if(!a||!amount)return;state.transactions.unshift({id:uid(),date:new Date().toISOString().slice(0,10),desc:desc||type,type:type,amount:amount,category:category||'Uncategorized',account:account});a.balance+=type==='Income'?amount:-amount}
+
+function handle(action){
+  if(action==='open-quick')return openQuick();
+  if(action==='close-quick')return closeQuick();
+  if(action==='vex-judge'){judgeVex(true);return}
+  if(action==='add-tx'){
+    var err=$('txError');err.textContent='';
+    if(!n('txAmount')){err.textContent='Enter an amount greater than 0.';$('txAmount').focus();return}
+    if(!state.accounts.length){err.textContent='Add an account in Money first.';return}
+    closeQuick();
+    return act('Transaction saved',function(){
+      addTransaction(v('txDesc'),v('txType'),n('txAmount'),v('txCategory'),v('txAccount'));
+      resetQuick();
+    });
+  }
+  if(action==='add-account')return act('Account added',function(){
+    state.accounts.push({id:uid(),name:v('accName')||'Account',type:v('accType'),balance:n('accBalance'),include:v('accInclude')==='yes'});
+    clearFields(['accName','accBalance']);
+  });
+  if(action==='seed-account')return act('Sample account added',function(){
+    state.accounts.push({id:uid(),name:'BPI Payroll',type:'Bank',balance:0,include:true});
+  });
+  if(action==='add-budget'){
+    if(!n('budgetLimit')){toast('Enter a monthly limit first.');return}
+    return act('Budget added',function(){
+      state.budgets.push({id:uid(),category:v('budgetCategory')||'Category',limit:n('budgetLimit'),alert:Number(v('budgetAlert'))});
+      clearFields(['budgetCategory','budgetLimit']);
+    });
+  }
+  if(action==='add-bill')return act('Bill added',function(){
+    state.bills.push({id:uid(),name:v('billName')||'Bill',type:v('billType'),amount:n('billAmount'),day:Math.min(31,Math.max(1,n('billDay'))),freq:v('billFreq'),paid:false});
+    clearFields(['billName','billAmount']);
+  });
+  if(action==='add-debt')return act('Debt added',function(){
+    state.debts.push({id:uid(),name:v('debtName')||'Loan',balance:n('debtBalance'),payment:n('debtPayment'),freq:v('debtFreq'),due:v('debtDue')});
+    clearFields(['debtName','debtBalance','debtPayment']);
+  });
+  if(action==='add-goal')return act('Goal added',function(){
+    state.goals.push({id:uid(),name:v('goalName')||'Goal',target:n('goalTarget'),current:n('goalCurrent'),contribution:n('goalContribution'),date:v('goalDate')});
+    clearFields(['goalName','goalTarget','goalCurrent','goalContribution']);
+  });
+  if(action==='post-payroll'){
+    if(!state.accounts.length){toast('Add an account in Money first.');return}
+    return act('Payroll posted as income',function(){
+      addTransaction('Payroll - '+v('payPeriod'),'Income',netEstimate,'Salary',state.accounts[0].id);
+    });
+  }
+  if(action==='export'){
+    var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='payday-control-backup.json';a.click();URL.revokeObjectURL(url);
+    return;
+  }
+  if(action==='reset'){
+    if(!confirm('Delete all locally saved financial data?'))return;
+    return act('All data reset',function(){state=clone(defaultState)});
+  }
+}
+
+function deleteRecord(kind,id){
+  var map={account:'accounts',tx:'transactions',budget:'budgets',bill:'bills',debt:'debts',goal:'goals'};
+  var key=map[kind];if(!key)return;
+  act('Deleted',function(){state[key]=state[key].filter(function(x){return String(x.id)!==String(id)})});
+}
+function togglePaid(id){
+  var b=state.bills.find(function(x){return String(x.id)===String(id)});if(!b)return;
+  act(b.paid?'Marked unpaid':'Marked paid',function(){b.paid=!b.paid});
+}
+
+/* ---------- Event wiring ---------- */
+document.addEventListener('click',function(e){
+  if(e.target.id==='quickSheet'){closeQuick();return}
+  var el=e.target.closest('[data-page],[data-goto],[data-sub-value],[data-setval],[data-nudge],[data-filter],[data-home],[data-action],[data-delete],[data-paid],[data-undo]');
+  if(!el)return;
+  if(el.hasAttribute('data-page')) showPage(el.getAttribute('data-page'));
+  else if(el.hasAttribute('data-goto')){var p=el.getAttribute('data-goto').split(':');showPage(p[0]);setSub(p[0],p[1]);}
+  else if(el.hasAttribute('data-sub-value')) setSub(el.getAttribute('data-sub-group'),el.getAttribute('data-sub-value'));
+  else if(el.hasAttribute('data-setval')) setVal(el.getAttribute('data-setval'),el.getAttribute('data-value'));
+  else if(el.hasAttribute('data-nudge')){var q=el.getAttribute('data-nudge').split(':');nudge(q[0],Number(q[1]));}
+  else if(el.hasAttribute('data-filter')){txFilter=el.getAttribute('data-filter');all('[data-filter]').forEach(function(c){c.classList.toggle('active',c===el)});renderTx();}
+  else if(el.hasAttribute('data-home')){homeBill=el.getAttribute('data-home');all('[data-home]').forEach(function(c){c.classList.toggle('active',c===el)});renderUpcoming();}
+  else if(el.hasAttribute('data-action')) handle(el.getAttribute('data-action'));
+  else if(el.hasAttribute('data-delete')) deleteRecord(el.getAttribute('data-delete'),el.getAttribute('data-id'));
+  else if(el.hasAttribute('data-paid')) togglePaid(el.getAttribute('data-paid'));
+  else if(el.hasAttribute('data-undo')) undoLast();
+});
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&$('quickSheet').classList.contains('open'))closeQuick()});
+
+document.addEventListener('input',function(e){
+  var id=e.target.id;
+  if(id==='txSearch')renderTx();
+  else if(id==='txCategory')syncSegs();
+  else if(['basic','workdays','otReg','otHol','otEx','gas','otherDed'].indexOf(id)>=0)calcPayroll();
+});
+
+document.addEventListener('change',function(e){
+  var id=e.target.id;
+  if(['payPeriod','contribSchedule'].indexOf(id)>=0)calcPayroll();
+  if(id==='nextPayday'){state.nextPayday=e.target.value;renderOverview();save()}
+});
+
+$('importFile').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var data=JSON.parse(r.result);
+      if(!data||!Array.isArray(data.accounts)||!Array.isArray(data.transactions))throw new Error('invalid');
+      act('Backup imported',function(){state=Object.assign(clone(defaultState),data)});
+    }catch(err){
+      toast('Invalid backup file.');
+    }
+    e.target.value='';
+  };
+  r.readAsText(f);
+});
+
+/* ---------- Init ---------- */
+if(!state.nextPayday){var d=new Date();d.setDate(d.getDate()+15);state.nextPayday=d.toISOString().slice(0,10)}
+$('nextPayday').value=state.nextPayday;
+render();
+})();
+</script>
+</body>
+</html>
